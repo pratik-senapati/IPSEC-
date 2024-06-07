@@ -38,8 +38,3 @@ void decrypt()
 
 }
 
-// int main()
-// {
-//     decrypt();
-//     return 0;
-// }

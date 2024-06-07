@@ -41,13 +41,9 @@ void encrypt()
     fwrite(buffer, fileLength, 1, output);
     fclose(output);
 
+
     free(buffer);
 
 
 }
 
-// int main()
-// {
-//     encrypt();
-//     return 0;
-// }

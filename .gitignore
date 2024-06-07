@@ -1,0 +1,8 @@
+# Ignore binary files
+*.o
+*.a
+*.so
+*.dll
+*.bin
+*.exe
+*.class

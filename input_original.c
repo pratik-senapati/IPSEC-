@@ -1,12 +1,6 @@
 
 #include "head.h"
 
-
-
-
-
-
-
 struct ipsec_test_data pkt_aes_128_gcm = {
 	.input_text = {
 		.data = {
@@ -55,7 +49,6 @@ struct ipsec_test_data pkt_aes_128_gcm = {
 	},
 };
 
-
 //create a binary file to use 
 
 int main()
@@ -83,7 +76,6 @@ int main()
 		printf("successful");
 		fclose(file);
 	}
-		
 
 	return 0;
 

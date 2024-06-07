@@ -1,12 +1,10 @@
 #include "head.h"
 #include<pthread.h>
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* enc_thread()
 {
-    
-
     pthread_mutex_lock(&mutex);
     encrypt();
     printf("Encrypted\n");
@@ -15,8 +13,6 @@ void* enc_thread()
 
 void* dec_thread()
 {
-    
-
     pthread_mutex_lock(&mutex);
     decrypt();
     printf("Decrypted\n");
