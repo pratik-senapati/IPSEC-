@@ -1,5 +1,6 @@
-
 #include "head.h"
+
+/*TODO: Add the function to the header and prototype*/
 
 struct ipsec_test_data pkt_aes_128_gcm = {
 	.input_text = {
@@ -49,36 +50,28 @@ struct ipsec_test_data pkt_aes_128_gcm = {
 	},
 };
 
-//create a binary file to use 
-
+/*The function creates a binary file to use in the encrypt function*/
 int main()
 {
-	FILE* file= fopen("temp", "wb");
+	FILE *file = fopen("temp", "wb");
 
-	if(file==NULL)
-	{
+	if( file == NULL ){
 		printf("error");
 		return 1;
 	}
 
-	size_t stream=pkt_aes_128_gcm.input_text.len;
-	size_t temp=fwrite(pkt_aes_128_gcm.input_text.data, 1, stream,file);
+	/* Extracting data from the structure defined above.*/
+	size_t stream = pkt_aes_128_gcm.input_text.len;
+	size_t temp = fwrite(pkt_aes_128_gcm.input_text.data, 1, stream,file);
 
-	if(temp!=stream)
-	{
+	if( temp != stream ){
 		perror("error writing ");
 		fclose(file);
 		return 1;
-
-	}
-	else
-	{
+	} else{
 		printf("successful");
 		fclose(file);
 	}
 
 	return 0;
-
 }
-
-

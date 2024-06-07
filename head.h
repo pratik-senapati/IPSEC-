@@ -1,7 +1,6 @@
 #ifndef HEAD_H
 #define HEAD_H
 
-
 #include<stdint.h>
 #include<stdio.h>
 #include<unistd.h>
@@ -12,17 +11,17 @@
 void encrypt();
 void decrypt();
 
+/*Basic struct definition from dpdk docs for ipsec test vectors*/
 struct ipsec_test_data {
-   struct {
-		uint8_t data[IPSEC_TEXT_MAX_LEN];
+   struct  {
+		uint8_t      data[IPSEC_TEXT_MAX_LEN];
 		unsigned int len;
-	} input_text;
+	}input_text;
 
-	struct {
-		uint8_t data[IPSEC_TEXT_MAX_LEN];
+	struct  {
+		uint8_t      data[IPSEC_TEXT_MAX_LEN];
 		unsigned int len;
-	} output_text;
+	}output_text;
 };
 
-
-#endif
+#endif /*HEAD_H*/

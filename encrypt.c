@@ -1,49 +1,40 @@
 #include "head.h"
 
+/*TODO: add the checks for whether the file exist before executing calling other methods*/
 
-void encrypt()
+/* A function to encrypt the packet information*/
+void decrypt()
 {
     FILE* input;
     FILE* output;
-
     char* buffer;
     long fileLength;
 
+    /* "rb" is read binary mode. */
+    input = fopen("temp", "rb");
 
-    input=fopen("temp", "rb");
-    //open the file in read binary mode
-
-    if(!input)
-    {
-        printf("error");
-        return;
-    }
-
-    printf("success");
-
+    /*"input" goes to the end of the file.*/  
     fseek(input, 0, SEEK_END);
-    //this goes to end of the file
+  
+    /*
+     *"filelength" gets the current position of the file pointer 
+     *which is at the end of the file.
+    
+    */ 
+    fileLength = ftell(input);
 
-    fileLength=ftell(input);
-    //this gets the current position of the file pointer
-
-    //go back to the beginning of the file 
+    /*Rewind "input" back to the beginning of the file*/
     rewind(input);
 
-    //now allocate memory to the buffer in order to copy
-    buffer= (char*)malloc((fileLength)*sizeof(char));
+    /*Now allocate memory to the buffer in order to copy and read from "input".*/
+    buffer = (char*)malloc((fileLength)*sizeof( char ));
     fread(buffer, fileLength, 1, input);
     fclose(input);
-
-
-    //now open the output file and write 
-    output=fopen("encrypt", "wb");
+ 
+    output = fopen("encrypt", "wb");
     fwrite(buffer, fileLength, 1, output);
     fclose(output);
 
-
     free(buffer);
-
-
 }
 

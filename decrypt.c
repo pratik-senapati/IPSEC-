@@ -1,40 +1,38 @@
 #include "head.h"
 
-
+/* A function to decrypt the packet information*/
 void decrypt()
 {
     FILE* input;
     FILE* output;
-
     char* buffer;
     long fileLength;
 
+    /* "rb" is read binary mode. */
+    input = fopen("encrypt", "rb");
 
-    input=fopen("encrypt", "rb");
-    //open the file in read binary mode
-
+    /*"input" goes to the end of the file.*/  
     fseek(input, 0, SEEK_END);
-    //this goes to end of the file
+  
+    /*
+     *"filelength" gets the current position of the file pointer 
+     *which is at the end of the file.
+    
+    */ 
+    fileLength = ftell(input);
 
-    fileLength=ftell(input);
-    //this gets the current position of the file pointer
-
-    //go back to the beginning of the file 
+    /*Rewind "input" back to the beginning of the file*/
     rewind(input);
 
-    //now allocate memory to the buffer in order to copy
-    buffer= (char*)malloc((fileLength)*sizeof(char));
+    /*Now allocate memory to the buffer in order to copy and read from "input"*/
+    buffer = (char*)malloc((fileLength)*sizeof( char ));
     fread(buffer, fileLength, 1, input);
     fclose(input);
-
-
-    //now open the output file and write 
-    output=fopen("decrypt", "wb");
+ 
+    output = fopen("decrypt", "wb");
     fwrite(buffer, fileLength, 1, output);
     fclose(output);
 
     free(buffer);
-
-
 }
 
