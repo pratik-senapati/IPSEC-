@@ -24,7 +24,7 @@ void decrypt()
     /*Rewind "input" back to the beginning of the file*/
     rewind(input);
 
-    /*Now allocate memory to the buffer in order to copy and read from "input"*/
+    /*Allocate memory to the buffer in order to copy and read from "input"*/
     buffer = (char*)malloc((fileLength)*sizeof( char ));
     fread(buffer, fileLength, 1, input);
     fclose(input);

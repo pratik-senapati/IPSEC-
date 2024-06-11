@@ -50,8 +50,9 @@ struct ipsec_test_data pkt_aes_128_gcm = {
 	},
 };
 
-/*The function creates a binary file to use in the encrypt function*/
-int main()
+/* The function creates a binary file to use in the encrypt function */
+int 
+create_temp()
 {
 	FILE *file = fopen("temp", "wb");
 
@@ -60,7 +61,7 @@ int main()
 		return 1;
 	}
 
-	/* Extracting data from the structure defined above.*/
+	/* Extract data from the structure defined above.*/
 	size_t stream = pkt_aes_128_gcm.input_text.len;
 	size_t temp = fwrite(pkt_aes_128_gcm.input_text.data, 1, stream,file);
 

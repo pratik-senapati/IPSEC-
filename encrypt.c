@@ -3,7 +3,7 @@
 /*TODO: add the checks for whether the file exist before executing calling other methods*/
 
 /* A function to encrypt the packet information*/
-void decrypt()
+void encrypt()
 {
     FILE* input;
     FILE* output;
@@ -26,7 +26,7 @@ void decrypt()
     /*Rewind "input" back to the beginning of the file*/
     rewind(input);
 
-    /*Now allocate memory to the buffer in order to copy and read from "input".*/
+    /*Allocate memory to the buffer in order to copy and read from "input".*/
     buffer = (char*)malloc((fileLength)*sizeof( char ));
     fread(buffer, fileLength, 1, input);
     fclose(input);

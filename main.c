@@ -11,6 +11,8 @@
 
 /*A mutex lock to ensure that only one thread is running at a time.*/
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+static int temp_created=0;
 
 /*The thread used for encryption, calls the encrypt() function included in "head.h".*/
 static void*
@@ -24,7 +26,7 @@ enc_thread()
     pthread_mutex_unlock(&mutex);
 }
 
-/*The thread used for encryption, calls the encrypt() function included in "head.h".*/
+/*The thread used for encryption, calls the decrypt() function included in "head.h".*/
 static void*
 dec_thread()
 {
@@ -39,6 +41,8 @@ dec_thread()
 /*Main function call for the application.*/
 int main()
 {
+    create_temp();
+    sleep(2);
     pthread_t t1;
     pthread_t t2;
 
