@@ -11,8 +11,8 @@ void decrypt()
     /* "rb" is read binary mode. */
     input = fopen("encrypt", "rb");
 
-    if( input == NULL )
-    {
+    if( input == NULL ){
+
         printf("Encryption file does not exist error\n");
         return;
     }
@@ -36,8 +36,7 @@ void decrypt()
  
     output = fopen("decrypt", "wb");
 
-    if( output == NULL )
-    {
+    if( output == NULL ){
         printf("Decryption error\n");
         return;
     }
@@ -46,6 +45,20 @@ void decrypt()
     fclose(output);
 
     free(buffer);
+
+    /* Clear the "encrypt" file */
+    if( truncate("encrypt", 0) != 0 ){ 
+
+        printf("Error clearing the encrytped file\n");
+
+    }else {
+
+        printf("Encrypted File cleared\n");
+
+    }
+    
+
+
 
     return;
 }

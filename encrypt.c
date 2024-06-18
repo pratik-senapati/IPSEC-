@@ -50,6 +50,17 @@ void encrypt()
 
     free(buffer);
 
+    /* Clear the "decrypt" file */
+     if( truncate("decrypt", 0) != 0 ){ 
+
+        printf("Error clearing the decrytped file\n");
+
+    }else {
+
+        printf("Decrypted File cleared\n");
+
+    }
+    
     return;
 }
 

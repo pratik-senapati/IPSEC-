@@ -47,6 +47,7 @@ enc_thread()
 static void*
 dec_thread()
 {
+    
     pthread_mutex_lock(&mutex);
 
     while( cond_var != 0 ) 
