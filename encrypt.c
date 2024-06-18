@@ -13,6 +13,12 @@ void encrypt()
     /* "rb" is read binary mode. */
     input = fopen("temp", "rb");
 
+    if( input == NULL )
+    {
+        printf("temp file does not exist error\n");
+        return;
+    }
+    
     /*"input" goes to the end of the file.*/  
     fseek(input, 0, SEEK_END);
   
@@ -32,9 +38,18 @@ void encrypt()
     fclose(input);
  
     output = fopen("encrypt", "wb");
+
+    if( output == NULL )
+    {
+        printf("Encryption error\n");
+        return;
+    }
+
     fwrite(buffer, fileLength, 1, output);
     fclose(output);
 
     free(buffer);
+
+    return;
 }
 

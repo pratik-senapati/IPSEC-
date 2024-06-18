@@ -70,7 +70,7 @@ create_temp()
 		fclose(file);
 		return 1;
 	} else{
-		printf("successful");
+		printf("successful\n");
 		fclose(file);
 	}
 

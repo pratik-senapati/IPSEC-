@@ -12,8 +12,6 @@ void encrypt();
 void decrypt();
 int create_temp();
 
-
-
 /*Basic struct definition from dpdk docs for ipsec test vectors*/
 struct ipsec_test_data {
    struct  {

@@ -11,6 +11,11 @@ void decrypt()
     /* "rb" is read binary mode. */
     input = fopen("encrypt", "rb");
 
+    if( input == NULL )
+    {
+        printf("Encryption file does not exist error\n");
+        return;
+    }
     /*"input" goes to the end of the file.*/  
     fseek(input, 0, SEEK_END);
   
@@ -30,9 +35,18 @@ void decrypt()
     fclose(input);
  
     output = fopen("decrypt", "wb");
+
+    if( output == NULL )
+    {
+        printf("Decryption error\n");
+        return;
+    }
+
     fwrite(buffer, fileLength, 1, output);
     fclose(output);
 
     free(buffer);
+
+    return;
 }
 
