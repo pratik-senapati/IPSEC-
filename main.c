@@ -1,10 +1,14 @@
 #include<pthread.h>
 #include "head.h"
 
-/*TODO: make the synch better,
- *make the encryption and decryption run one after another,
- *add error handling,
- *read from the file, clear it and write as necessary in that order
+/*
+ *TODO: 
+ *Run the functions 10, 100, 1000... times to check synch issues and mem management
+ *Add robust error handling, in the case one of the threads waits too long it'll finish executing (timeout)
+ *Check error handling with malloc 
+ *Add error handling in mutex lock checking 
+ *Error handling in whether the thread is created or not 
+
 */
 
 /*A mutex lock to ensure that only one thread is running at a time.*/
@@ -15,7 +19,6 @@ static pthread_cond_t dec_cond = PTHREAD_COND_INITIALIZER;
 /* 1 is used for encryption and 0 for decryption */
 static int cond_var=1;
 
-
 /*
  *The thread used for encryption, calls the encrypt() function included in "head.h".
  *The function waits for the decryption thread to finish before starting.
@@ -24,19 +27,24 @@ static int cond_var=1;
 static void*
 enc_thread()
 {
-    pthread_mutex_lock(&mutex);
-
-    while( cond_var != 1 ) 
+    int counter=0;
+    for( int i=0 ; i<1000000 ; i++ )
     {
-        pthread_cond_wait(&enc_cond, &mutex);
+        pthread_mutex_lock(&mutex);
+
+        while( cond_var != 1 ) 
+        {
+            pthread_cond_wait(&enc_cond, &mutex);
+        }
+
+        encrypt();
+        printf("Encrypted:%d\n", counter);
+        cond_var=0;
+
+        pthread_cond_signal(&dec_cond);
+        pthread_mutex_unlock(&mutex);
+        counter++;
     }
-
-    encrypt();
-    printf("Encrypted\n");
-    cond_var=0;
-
-    pthread_cond_signal(&dec_cond);
-    pthread_mutex_unlock(&mutex);
 }
 
 /*
@@ -47,19 +55,25 @@ enc_thread()
 static void*
 dec_thread()
 {
-    
-    pthread_mutex_lock(&mutex);
-
-    while( cond_var != 0 ) 
+    int counter=0;
+    for( int i=0 ; i<1000000 ; i++ )
     {
-        pthread_cond_wait(&dec_cond, &mutex);
-    }
+        pthread_mutex_lock(&mutex);
 
-    decrypt();
-    printf("Decrypted\n");
-    cond_var=1;
+        while( cond_var != 0 ) 
+        {
+            pthread_cond_wait(&dec_cond, &mutex);
+        }
+
+        decrypt();
+        printf("Decrypted:%d\n", counter);
+        cond_var=1;
+        
+        pthread_cond_signal(&enc_cond);
+        pthread_mutex_unlock(&mutex);
+        counter++;
+    }
     
-    pthread_mutex_unlock(&mutex);
 }
 
 /*Main function call for the application.*/
