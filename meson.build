@@ -7,7 +7,7 @@ sources = [
   'decrypt.c',
   'encrypt.c',
   'head.h',
-  'input_original.c',
+  'input_output_original.c',
   'main.c',
 ]
 

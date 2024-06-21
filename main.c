@@ -3,12 +3,9 @@
 
 /*
  *TODO: 
- *Run the functions 10, 100, 1000... times to check synch issues and mem management
- *Add robust error handling, in the case one of the threads waits too long it'll finish executing (timeout)
- *Check error handling with malloc 
+ *Add robust error handling, in the case one of the threads waits too long it'll finish executing (timeout) 
  *Add error handling in mutex lock checking 
  *Error handling in whether the thread is created or not 
-
 */
 
 /*A mutex lock to ensure that only one thread is running at a time.*/

@@ -11,7 +11,7 @@ void encrypt()
     long fileLength;
 
     /* "rb" is read binary mode. */
-    input = fopen("temp", "rb");
+    input = fopen("input_binary_file", "rb");
 
     if( input == NULL )
     {

@@ -48,13 +48,32 @@ struct ipsec_test_data pkt_aes_128_gcm = {
 		},
 		.len = 116,
 	},
+	.salt = {
+		.data = {
+			0xca, 0xfe, 0xba, 0xbe
+		},
+		.len = 4,
+	},
+
+	.iv = {
+		.data = {
+			0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88
+		},
+	},
+	.key = {
+		.data = {
+			0xfe, 0xff, 0xe9, 0x92, 0x86, 0x65, 0x73, 0x1c,
+			0x6d, 0x6a, 0x8f, 0x94, 0x67, 0x30, 0x83, 0x08
+		},
+	},
+
 };
 
 /* The function creates a binary file to use in the encrypt function */
 int 
-create_temp()
+create_temp_input()
 {
-	FILE *file = fopen("temp", "wb");
+	FILE *file = fopen("input_binary_file", "wb");
 
 	if( file == NULL ){
 		printf("error");
@@ -74,5 +93,38 @@ create_temp()
 		fclose(file);
 	}
 
+	return 0;
+}
+
+int 
+create_temp_output()
+{
+    FILE *file = fopen("output_binary_file", "wb");
+
+    if (file == NULL) {
+        printf("Error creating output_binary_file\n");
+        return 1;
+    }
+
+    /* Extract data from the structure defined above. */
+    size_t stream = pkt_aes_128_gcm.output_text.len;
+    size_t temp = fwrite(pkt_aes_128_gcm.output_text.data, 1, stream, file);
+
+    if (temp != stream) {
+        perror("Error writing to output_binary_file");
+        fclose(file);
+        return 1;
+    } else {
+        printf("Binary file output_binary_file created successfully.\n");
+        fclose(file);
+    }
+
+    return 0;
+}
+
+int main()
+{
+	create_temp_input();
+	create_temp_output();
 	return 0;
 }
