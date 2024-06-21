@@ -1,14 +1,16 @@
 #include "head.h"
 
-/*TODO: add the checks for whether the file exist before executing calling other methods*/
+/*
+*TODO: 
+*/
 
 /* A function to encrypt the packet information*/
 void encrypt()
 {
-    FILE* input;
-    FILE* output;
-    char* buffer;
-    long fileLength;
+    FILE* input = NULL;
+    FILE* output = NULL;
+    char* buffer = NULL;
+    long fileLength = 0;
 
     /* "rb" is read binary mode. */
     input = fopen("input_binary_file", "rb");
@@ -33,7 +35,7 @@ void encrypt()
     rewind(input);
 
     /*Allocate memory to the buffer in order to copy and read from "input".*/
-    buffer = (char*)malloc((fileLength)*sizeof( char ));
+    buffer = (char*)malloc((fileLength) * sizeof( char ));
     fread(buffer, fileLength, 1, input);
     fclose(input);
  

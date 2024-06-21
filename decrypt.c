@@ -3,10 +3,10 @@
 /* A function to decrypt the packet information*/
 void decrypt()
 {
-    FILE* input;
-    FILE* output;
-    char* buffer;
-    long fileLength;
+    FILE* input = NULL;
+    FILE* output = NULL;
+    char* buffer = NULL;
+    long fileLength = 0;
 
     /* "rb" is read binary mode. */
     input = fopen("encrypt", "rb");
@@ -30,7 +30,7 @@ void decrypt()
     rewind(input);
 
     /*Allocate memory to the buffer in order to copy and read from "input"*/
-    buffer = (char*)malloc((fileLength)*sizeof( char ));
+    buffer = (char*)malloc((fileLength) * sizeof( char ));
     fread(buffer, fileLength, 1, input);
     fclose(input);
  

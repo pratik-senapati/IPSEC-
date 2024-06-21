@@ -1,7 +1,5 @@
 #include "head.h"
 
-/*TODO: Add the function to the header and prototype*/
-
 struct ipsec_test_data pkt_aes_128_gcm = {
 	.input_text = {
 		.data = {
@@ -120,11 +118,4 @@ create_temp_output()
     }
 
     return 0;
-}
-
-int main()
-{
-	create_temp_input();
-	create_temp_output();
-	return 0;
 }
