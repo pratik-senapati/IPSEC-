@@ -49,7 +49,7 @@ void decrypt()
     /* Clear the "encrypt" file */
     if( truncate("encrypt", 0) != 0 ){ 
 
-        printf("Error clearing the encrytped file\n");
+        printf("Error clearing the encrypted file\n");
 
     }else {
 

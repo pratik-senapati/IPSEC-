@@ -87,7 +87,7 @@ create_temp_input()
 		fclose(file);
 		return 1;
 	} else{
-		printf("successful\n");
+		printf("Binary file input_binary_file created successfully.\n");
 		fclose(file);
 	}
 
