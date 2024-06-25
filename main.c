@@ -20,7 +20,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t enc_cond = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t dec_cond = PTHREAD_COND_INITIALIZER;
 
-static pthread_cond_t termination_cond = PTHREAD_COND_INITIALIZER;
+// static pthread_cond_t termination_cond = PTHREAD_COND_INITIALIZER;
 
 /* 1 is used for encryption and 0 for decryption */
 static int cond_var=1;
@@ -43,7 +43,7 @@ int main()
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&enc_cond, NULL);
     pthread_cond_init(&dec_cond, NULL);
-    pthread_cond_init(&termination_cond, NULL);
+    // pthread_cond_init(&termination_cond, NULL);
 
     signal(SIGINT, handle_signal);
 
@@ -121,6 +121,7 @@ dec_thread()
                 if( terminate_threads == 1 ){
                 
                 if( enc_counter == dec_counter + 1 ){
+                    
                     decrypt();
                     printf("Decrypted:%d\n", dec_counter);
                     cond_var=1;
@@ -128,7 +129,7 @@ dec_thread()
 
                 }
                 
-                pthread_cond_signal(&termination_cond);
+                // pthread_cond_signal(&termination_cond);
                 break;
             }
                 pthread_cond_wait(&dec_cond, &mutex);
@@ -144,11 +145,11 @@ dec_thread()
         } else
             break;
         
-        if( terminate_threads == 1 ){
+        // if( terminate_threads == 1 ){
                
-               pthread_cond_signal(&termination_cond);
-               break;
-        }
+        //     //    pthread_cond_signal(&termination_cond);
+        //        break;
+        // }
 
         pthread_cond_signal(&enc_cond);
         pthread_mutex_unlock(&mutex);
