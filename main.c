@@ -7,7 +7,6 @@
  *Add robust error handling, in the case one of the threads waits too long it'll finish executing (timeout) 
  *Add error handling in mutex lock checking 
  *Error handling in whether the thread is created or not 
- *Add exit signal handling 
 */
 
 static void *enc_thread();
@@ -69,55 +68,36 @@ int main()
 static void*
 enc_thread()
 {
-    // printf("stuck check 20 \n");
     while( 1 )
     {
-        // printf("stuck check 0 \n");
         pthread_mutex_lock(&mutex);
 
-        if( terminate_threads == 1 ){
-
-                // printf("stuck check 26 \n");
-                // pthread_cond_wait(&termination_cond, &mutex);
-                // printf("stuck check 23");
-                break;
-        }
-
-        // printf("stuck check 30 \n");
-        
+        if( terminate_threads == 1 )
+            break;
+    
         while( cond_var != 1 ) 
         {
-            // printf("Stuck check 9\n");
             pthread_cond_wait(&enc_cond, &mutex);
-            // printf("Stuck check 90\n");
             pthread_mutex_unlock(&mutex);
         }
 
-        // printf("stuck check 31 \n");
-
        if( terminate_threads != 1 && enc_counter == dec_counter){
 
-            // printf("stuck check 35 \n");
             enc_counter++;
             fflush(stdout);
             encrypt();
-            // printf("stuck check 32 \n");
             printf("Encrypted:%d\n", enc_counter-1);
             cond_var=0;
 
-        } else{
+        } else
             break;
-        }
-
+    
         pthread_cond_signal(&dec_cond);
         pthread_mutex_unlock(&mutex);
         
     }
 
-    // printf("stuck check 6 \n");
     pthread_cond_signal( &dec_cond );
-    // cond_var=0;
-    // printf("stuck check 8 \n");
     printf("\nSignal caught\n");
     printf("Exiting encryption thread...\n");
     pthread_exit(NULL);
@@ -135,35 +115,23 @@ dec_thread()
     
     while( 1 )
     {
-        // printf("stuck check 3 \n");
         pthread_mutex_lock(&mutex);
-
-        // if( terminate_threads == 1 ){
-               
-        //        printf("stuck check 50 \n");
-        //        pthread_cond_signal(&termination_cond);
-        //        break;
-        // }
-
         while( cond_var != 0 ) 
         {
-            // printf("stuck check 4 \n");
-            if( terminate_threads == 1 ){
-               
-               if( enc_counter == dec_counter + 1 )
-               {
-                decrypt();
-                printf("Decrypted:%d\n", dec_counter);
-                cond_var=1;
-                dec_counter++;
+                if( terminate_threads == 1 ){
+                
+                if( enc_counter == dec_counter + 1 ){
+                    decrypt();
+                    printf("Decrypted:%d\n", dec_counter);
+                    cond_var=1;
+                    dec_counter++;
 
-                //last change 
-               }
-            //    printf("stuck check 10 \n");
-               pthread_cond_signal(&termination_cond);
-               break;
-        }
-            pthread_cond_wait(&dec_cond, &mutex);
+                }
+                
+                pthread_cond_signal(&termination_cond);
+                break;
+            }
+                pthread_cond_wait(&dec_cond, &mutex);
         }
 
         if( dec_counter == enc_counter - 1 ){
@@ -173,23 +141,18 @@ dec_thread()
             cond_var=1;
             dec_counter++;
 
-        } else{
+        } else
             break;
-        }
-
+        
         if( terminate_threads == 1 ){
                
-            //    printf("stuck check 50 \n");
                pthread_cond_signal(&termination_cond);
                break;
         }
 
         pthread_cond_signal(&enc_cond);
-
         pthread_mutex_unlock(&mutex);
-
-        // printf("stuck check 5 \n");
-        
+   
     }
 
     pthread_mutex_unlock(&mutex);
