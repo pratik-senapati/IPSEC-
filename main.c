@@ -43,8 +43,7 @@ int main()
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&enc_cond, NULL);
     pthread_cond_init(&dec_cond, NULL);
-    // pthread_cond_init(&termination_cond, NULL);
-
+    
     signal(SIGINT, handle_signal);
 
     printf("Start\n");
@@ -64,35 +63,53 @@ int main()
  *The thread used for encryption, calls the encrypt() function included in "head.h".
  *The function waits for the decryption thread to finish before starting.
  *The function signals the decryption thread to start after finishing.
+ *The function is gracefully terminated when the signal is caught, and the termination happens after a cycle is finished.
  */
 static void*
 enc_thread()
 {
+    int ret = -1;
+
     while( 1 )
     {
-        pthread_mutex_lock(&mutex);
+        ret = pthread_mutex_lock(&mutex);
+        if( ret != 0 ){
+
+            printf("Error in obtaining the lock\n");
+            fflush(stdout);
+            terminate_threads = 1;
+        }
 
         if( terminate_threads == 1 )
             break;
     
         while( cond_var != 1 ) 
         {
-            pthread_cond_wait(&enc_cond, &mutex);
+            ret = pthread_cond_wait(&enc_cond, &mutex);
+            if ( ret != 0 ){
+
+                printf("Error in waiting for the condition\n");
+                terminate_threads = 1;
+            }
             pthread_mutex_unlock(&mutex);
         }
 
-       if( terminate_threads != 1 && enc_counter == dec_counter){
+       if( terminate_threads != 1 && enc_counter == dec_counter ){
 
             enc_counter++;
-            fflush(stdout);
             encrypt();
             printf("Encrypted:%d\n", enc_counter-1);
             cond_var=0;
 
         } else
             break;
-    
-        pthread_cond_signal(&dec_cond);
+
+        ret = pthread_cond_signal(&dec_cond);
+        if( ret != 0 ){
+            printf("Error in signalling the decryption thread\n");
+            terminate_threads = 1;
+        }
+
         pthread_mutex_unlock(&mutex);
         
     }
@@ -108,14 +125,22 @@ enc_thread()
  *The thread used for encryption, calls the decrypt() function included in "head.h".
  *The function waits for the encryption thread to finish before starting.
  *The function signals the encryption thread to start after finishing.
+ *The function is gracefully terminated when the signal is caught, and the termination happens after a cycle is finished.
  */
 static void*
 dec_thread()
 {
-    
+    int ret = -1;   
     while( 1 )
     {
-        pthread_mutex_lock(&mutex);
+        ret = pthread_mutex_lock(&mutex);
+
+        if( ret != 0 ){
+            printf("Error in obtaining the lock\n");
+            fflush(stdout);
+            terminate_threads = 1;
+        }
+
         while( cond_var != 0 ) 
         {
                 if( terminate_threads == 1 ){
@@ -124,41 +149,54 @@ dec_thread()
                     
                     decrypt();
                     printf("Decrypted:%d\n", dec_counter);
+                    fflush(stdout);
                     cond_var=1;
                     dec_counter++;
 
                 }
-                
-                // pthread_cond_signal(&termination_cond);
                 break;
             }
-                pthread_cond_wait(&dec_cond, &mutex);
+                ret = pthread_cond_wait(&dec_cond, &mutex);
+                if ( ret != 0 )
+                {
+                    printf("Error in waiting for the condition\n");
+                    fflush(stdout);
+                    terminate_threads = 1;
+                }
         }
 
         if( dec_counter == enc_counter - 1 ){
 
             decrypt();
             printf("Decrypted:%d\n", dec_counter);
+            fflush(stdout);
             cond_var=1;
             dec_counter++;
 
         } else
             break;
         
-        // if( terminate_threads == 1 ){
-               
-        //     //    pthread_cond_signal(&termination_cond);
-        //        break;
-        // }
+        ret = pthread_cond_signal(&enc_cond);
+        if( ret != 0 ){
+            printf("Error in signalling the encryption thread\n");
+            fflush(stdout);
+            terminate_threads = 1;
+        }
 
-        pthread_cond_signal(&enc_cond);
-        pthread_mutex_unlock(&mutex);
+        ret = pthread_mutex_unlock(&mutex);
+        if( ret != 0 ){
+            printf("Error in unlocking the mutex\n");
+            fflush(stdout);
+            terminate_threads = 1;
+        }
    
     }
 
     pthread_mutex_unlock(&mutex);
     printf("\nSignal caught\n");
+    fflush(stdout);
     printf("Exiting decryption thread...\n");
+    fflush(stdout);
     pthread_exit(NULL);
     
 }
@@ -167,11 +205,28 @@ void
 handle_signal()
 {
     /* When it gets the interrupt the signal, obtain the lock and wake both the threads up */
-    pthread_mutex_lock(&mutex);
-    printf("Signal locked\n");
-    terminate_threads = 1;
-    pthread_cond_signal(&enc_cond);
-    pthread_cond_signal(&dec_cond);
-    pthread_mutex_unlock(&mutex);
+    int lock_result = pthread_mutex_lock(&mutex);
+    int unlock_result = 0;
+
+    if( lock_result != 0 ){
+        printf("Error in obtaining the lock\n");
+        printf("Exiting...\n");
+        terminate_threads=1;
     
+    } else {
+
+        write(STDOUT_FILENO, "Signal caught\n", 15);
+        terminate_threads = 1;
+        pthread_cond_signal(&enc_cond);
+        pthread_cond_signal(&dec_cond);
+
+        unlock_result = pthread_mutex_unlock(&mutex);
+
+        if( unlock_result != 0 ){
+            printf("Error in unlocking the mutex\n");
+            printf("Exiting...\n");
+            terminate_threads=1;
+        }
+    
+    }
 }

@@ -1,0 +1,12 @@
+[user]
+    email = psenapati@marvell.com
+    name = Pratik Senapati 
+[core]
+    editor = code --wait
+[sendemail]
+    smtpserver = maili.marvell.com
+    smtpserverport = 25
+    chainreplyto = false
+    suppressfrom = true
+[http]
+    cookiefile = /home/psenapati/.gitcookies
