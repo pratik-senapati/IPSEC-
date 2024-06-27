@@ -8,5 +8,5 @@
     smtpserverport = 25
     chainreplyto = false
     suppressfrom = true
-[http]
-    cookiefile = /home/psenapati/.gitcookies
+# [http]
+#     cookiefile = /home/psenapati/.gitcookies
