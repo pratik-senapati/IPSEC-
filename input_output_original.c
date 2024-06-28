@@ -119,3 +119,10 @@ create_temp_output()
 
     return 0;
 }
+
+int main()
+{
+	create_temp_input();
+	create_temp_output();
+	return 0;
+}

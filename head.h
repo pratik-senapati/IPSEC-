@@ -6,9 +6,12 @@
 #include<unistd.h>
 #include<stdlib.h>
 #include<signal.h>
+#include<string.h>
 
 #include <openssl/evp.h>
 #include<openssl/aes.h>
+#include <openssl/conf.h>
+#include <openssl/err.h>
 
 
 #define IPSEC_TEXT_MAX_LEN 16384u

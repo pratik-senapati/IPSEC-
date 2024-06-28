@@ -5,7 +5,8 @@
 */
 
 /* A function to encrypt the packet information*/
-void encrypt()
+void 
+encrypt()
 {
     FILE* input = NULL;
     FILE* output = NULL;
@@ -66,3 +67,9 @@ void encrypt()
     return;
 }
 
+int main()
+{
+    encrypt();
+
+    return 0;
+}
