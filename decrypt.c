@@ -3,6 +3,8 @@
 /*
 *TODO: 
 *Add authentication tag verification 
+*Add the IP header on top of the decrypted data 
+*Add better error handling
 */
 
 static const unsigned char key[16] = {0xfe, 0xff, 0xe9, 0x92, 0x86, 0x65, 0x73, 0x1c, 0x6d, 0x6a, 0x8f, 0x94, 0x67, 0x30, 0x83, 0x08};
@@ -99,28 +101,31 @@ void
 decrypt_util(unsigned char *cipher_text, int cipher_text_len, unsigned char *plain_text)
 {
     EVP_CIPHER_CTX *ctx;
-    int len=0;
-    int plaintext_len=0;
-    int ret=0;
+    int len = 0;
+    int plaintext_len = 0;
 
     /* Create and initialise the context */
-    if( !( ctx = EVP_CIPHER_CTX_new() ) )
+    if( ( ctx = EVP_CIPHER_CTX_new() ) == NULL )
+    {   
+        printf("Error creating context\n");
         handle_errors();
+    }
+        
     
-    if( !EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL) )
+    if( 1 != EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, NULL, NULL) )
         handle_errors();
 
     unsigned char nonce[12];
     memcpy(nonce, salt, 4);
     memcpy(nonce + 4, iv, 8);
 
-    if( !EVP_DecryptInit_ex(ctx, NULL, NULL, key, nonce) )
+    if( 1 != EVP_DecryptInit_ex(ctx, NULL, NULL, key, nonce) )
         handle_errors();
     
-    if( !EVP_DecryptUpdate(ctx, plain_text, &len, cipher_text, cipher_text_len) )
+    if( 1 != EVP_DecryptUpdate(ctx, plain_text, &len, cipher_text, cipher_text_len) )
         handle_errors();
 
-    printf("Decrypted text:");
+    printf("Decrypted text:\n");
     BIO_dump_fp(stdout, (const char*)plain_text, len);
 
 
@@ -130,6 +135,7 @@ void
 handle_errors()
 {
     ERR_print_errors_fp(stderr);
+    printf("errors");
     exit(0);
 }
 
