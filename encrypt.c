@@ -2,15 +2,15 @@
 
 /*
 *TODO: 
-*Add AAD handling for tag
-*Attach tag, IV, ESP and IP header to the output in the correct order
 *Add better error handling
+*Add better comments and spacing
 */
 
 static const unsigned char key[16] = {0xfe, 0xff, 0xe9, 0x92, 0x86, 0x65, 0x73, 0x1c, 0x6d, 0x6a, 0x8f, 0x94, 0x67, 0x30, 0x83, 0x08};
 static const unsigned char iv[8] = {0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88};
 static const unsigned char salt[4] = {0xca, 0xfe, 0xba, 0xbe};
 static const unsigned char esp[8] = {0x00, 0x00, 0xa5, 0xf8, 0x00, 0x00, 0x00, 0x01};
+static const unsigned char ip[20] = {0x45, 0x00, 0x00, 0x74, 0x69, 0x8f, 0x00, 0x00, 0x80, 0x32, 0x4d, 0x75, 0xc0, 0xa8, 0x01, 0x02, 0xc0, 0xa8, 0x01, 0x01,};
 
 void encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *ciphertext, size_t *cipher_text_len);
 
@@ -115,10 +115,10 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
     int padding_len = block_size - ((*plaintext_len + 2) % block_size);
     if(padding_len == block_size){
         padding_len = 0;
-    } 
+    }
 
-    // New plaintext length including padding, padding length, and next header fields
-    size_t new_plaintext_len = *plaintext_len + padding_len + 2; // +2 for padding length and next header
+    /* New plaintext length including padding, padding length, and next header fields, +2 for padding length and next header */
+    size_t new_plaintext_len = *plaintext_len + padding_len + 2; 
     unsigned char padded_plaintext[new_plaintext_len];
 
     memcpy(padded_plaintext, plaintext, *plaintext_len);
@@ -150,6 +150,12 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
         handle_errors();
     }
 
+    /* Add the AAD */
+    if( 1 != EVP_EncryptUpdate(ctx, NULL, &len, esp, sizeof(esp)) ) {
+        printf("Error adding AAD\n");
+        handle_errors();
+    }
+
     /* Provide the message to be encrypted, and obtain the encrypted output */
     if( 1 != EVP_EncryptUpdate(ctx, ciphertext, &len, padded_plaintext, *plaintext_len) ){
         printf("Error in EVP_EncryptUpdate\n");
@@ -173,14 +179,22 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
         handle_errors();
     }
 
+    /* Append the tag to the end, and IP Header, ESP Header and IV in that order */
     memcpy(ciphertext + *cipher_text_len, tag, 16);
-
     *cipher_text_len += 16;
+
+    /* Make space for the IP header, ESP Header and IV , (20 + 8 + 8)*/
+    memmove(ciphertext + 36, ciphertext, *cipher_text_len);
+    memcpy(ciphertext , ip, 20);
+    memcpy(ciphertext + 20, esp, 8);
+    memcpy(ciphertext + 28, iv, 8);
+
+    *cipher_text_len += 20 + 8 + 8 ;
 
     printf("Ciphertext is: %s\n", ciphertext);
 
     printf("Cipher text length is: %ld\n", *cipher_text_len);
-
+    
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
 
