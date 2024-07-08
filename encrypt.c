@@ -12,7 +12,7 @@ static const unsigned char salt[4] = {0xca, 0xfe, 0xba, 0xbe};
 static const unsigned char esp[8] = {0x00, 0x00, 0xa5, 0xf8, 0x00, 0x00, 0x00, 0x01};
 static const unsigned char ip[20] = {0x45, 0x00, 0x00, 0x74, 0x69, 0x8f, 0x00, 0x00, 0x80, 0x32, 0x4d, 0x75, 0xc0, 0xa8, 0x01, 0x02, 0xc0, 0xa8, 0x01, 0x01,};
 
-void encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *ciphertext, size_t *cipher_text_len);
+int encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *ciphertext, size_t *cipher_text_len);
 
 void handle_errors();
 
@@ -26,6 +26,7 @@ encrypt()
     long file_length = 0;
     unsigned char* ciphertext = NULL;
     size_t cipher_text_len = 0;
+    int ret = 0;
 
     /* "rb" is read binary mode. */
     input = fopen("input_binary_file", "rb");
@@ -33,7 +34,7 @@ encrypt()
     if( input == NULL )
     {
         printf("temp file does not exist error\n");
-        return;
+        goto cleanup;
     }
     
     /*"input" goes to the end of the file.*/  
@@ -55,17 +56,19 @@ encrypt()
     /*Allocate memory to the buffer in order to copy and read from "input".*/
     buffer = (char*)malloc((file_length) * sizeof( char ));
     fread(buffer, file_length, 1, input);
-    fclose(input);
- 
     output = fopen("encrypt", "wb");
 
-    if( output == NULL )
-    {
+    if( output == NULL ){
         printf("Encryption error\n");
-        return;
+        goto cleanup;
     }
 
     ciphertext= (char*)malloc((2048) * sizeof( char ));
+    if ( ciphertext == NULL ){
+        printf("Error allocating memory for ciphertext\n");
+        goto cleanup;
+    }
+    
 
     unsigned char* plain_text = (unsigned char*)malloc((plain_text_len) * sizeof( unsigned char ));
 
@@ -76,37 +79,42 @@ encrypt()
 
     memcpy(plain_text, buffer, plain_text_len);
 
-    encrypt_util(plain_text, &plain_text_len, ciphertext, &cipher_text_len);
+    ret = encrypt_util(plain_text, &plain_text_len, ciphertext, &cipher_text_len);
 
     fwrite(ciphertext, cipher_text_len, 1, output);
+
     if (ferror(output)) {
         printf("Error writing to output file\n");
-        return;
+        goto cleanup;
     }
     
-    fclose(output);
+    cleanup:
+        if ( output ) {
+            fclose(output);
+            output = NULL;
+        }
+        if ( buffer ) {
+            free(buffer);
+            buffer = NULL;
+        }
+        if ( plain_text ) {
+            free(plain_text);
+            plain_text = NULL;
+        }
+        if ( ciphertext ) {
+            free(ciphertext);
+            ciphertext = NULL;
+        }
 
-    free(buffer);
-
-    free(plain_text);
-
-    free(ciphertext);
-
-    /* Clear the "decrypt" file */
-     if( truncate("decrypt", 0) != 0 ){ 
-
-        printf("Error clearing the decrypted file\n");
-
-    }else {
-
-        printf("Decrypted File cleared\n");
-
-    }
-    
+        if ( truncate("decrypt", 0) != 0 )
+            printf("Error clearing the decrypted file\n");
+        else
+            printf("Decrypted File cleared\n");
+        
     return;
 }
 
-void
+int
 encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *ciphertext, size_t *cipher_text_len)
 {
     EVP_CIPHER_CTX* ctx;
@@ -137,7 +145,7 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
     /* Create and initialise the context */
      if( ( ctx = EVP_CIPHER_CTX_new() ) == NULL ){
         printf("Error in EVP_CIPHER_CTX_new\n");
-        handle_errors();
+        goto err;
     }
 
     unsigned char nonce[12];
@@ -147,19 +155,19 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
     /* Initialise the encryption operation */
     if( 1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_gcm(), NULL, key, nonce) ) {
         printf("Error in EVP_EncryptInit_ex\n");
-        handle_errors();
+        goto err;
     }
 
     /* Add the AAD */
     if( 1 != EVP_EncryptUpdate(ctx, NULL, &len, esp, sizeof(esp)) ) {
         printf("Error adding AAD\n");
-        handle_errors();
+        goto err;
     }
 
     /* Provide the message to be encrypted, and obtain the encrypted output */
     if( 1 != EVP_EncryptUpdate(ctx, ciphertext, &len, padded_plaintext, *plaintext_len) ){
         printf("Error in EVP_EncryptUpdate\n");
-        handle_errors();
+        goto err;
     }
 
     *cipher_text_len += len;
@@ -167,7 +175,7 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
     /* Finalise the encryption */
     if( 1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len) ){
         printf("Error in EVP_EncryptFinal_ex\n");
-        handle_errors();
+        goto err;
     }
 
     *cipher_text_len += len;
@@ -176,7 +184,7 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
 
     if( 1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag) ){
         printf("Error in EVP_CIPHER_CTX_ctrl\n");
-        handle_errors();
+        goto err;
     }
 
     /* Append the tag to the end, and IP Header, ESP Header and IV in that order */
@@ -197,16 +205,16 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
     
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
+    return 0;
 
-    return;
-}
+    err:
+        /* Error handling and cleanup in case of failure*/
+        if(ctx) 
+            EVP_CIPHER_CTX_free(ctx);
 
-void 
-handle_errors()
-{
-    ERR_print_errors_fp(stderr);
-    printf("errors\n");
-    exit(0);
+        ERR_print_errors_fp(stderr);
+        printf("An error occurred\n");
+        return 1;
 }
 
 int main()
