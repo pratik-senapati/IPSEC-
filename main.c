@@ -2,10 +2,6 @@
 
 #include "head.h"
 
-/*
- *TODO: 
-*/
-
 static void *enc_thread();
 static void *dec_thread();
 static void handle_signal();
@@ -61,6 +57,7 @@ int main()
  *The function waits for the decryption thread to finish before starting.
  *The function signals the decryption thread to start after finishing.
  *The function is gracefully terminated when the signal is caught, and the termination happens after a cycle is finished.
+ *A cycle being the process in which the encryption function is called, followed by the decryption function.
  */
 static void*
 enc_thread()
@@ -119,7 +116,7 @@ enc_thread()
 }
 
 /*
- *The thread used for encryption, calls the decrypt() function included in "head.h".
+ *The thread used for decryption, calls the decrypt() function included in "head.h".
  *The function waits for the encryption thread to finish before starting.
  *The function signals the encryption thread to start after finishing.
  *The function is gracefully terminated when the signal is caught, and the termination happens after a cycle is finished.
@@ -201,17 +198,17 @@ dec_thread()
 void 
 handle_signal()
 {
-    /* When it gets the interrupt the signal, obtain the lock and wake both the threads up */
+    /* When it gets the interrupt signal, obtain the lock and wake both the threads up */
     int lock_result = pthread_mutex_lock(&mutex);
     int unlock_result = 0;
 
+    /* Error checking for getting the lock */
     if( lock_result != 0 ){
         printf("Error in obtaining the lock\n");
         printf("Exiting...\n");
         terminate_threads=1;
     
     } else {
-
         write(STDOUT_FILENO, "Signal caught\n", 15);
         terminate_threads = 1;
         pthread_cond_signal(&enc_cond);

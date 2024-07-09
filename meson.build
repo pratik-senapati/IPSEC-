@@ -11,7 +11,11 @@ sources = [
   'main.c',
 ]
 
-# Create an executable target
+# Find OpenSSL dependency
+openssl_dep = dependency('openssl', version : '>= 1.1.0')
+
+# Create an executable target and link against OpenSSL
 executable('IPSEC-',
            sources,
+           dependencies : [openssl_dep],
            install : true)

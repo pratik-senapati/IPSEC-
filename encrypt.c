@@ -2,10 +2,10 @@
 
 /*
 *TODO: 
-*Add better error handling
 *Add better comments and spacing
 */
 
+/* Data that is set during the Security Association for encryption */
 static const unsigned char key[16] = {0xfe, 0xff, 0xe9, 0x92, 0x86, 0x65, 0x73, 0x1c, 0x6d, 0x6a, 0x8f, 0x94, 0x67, 0x30, 0x83, 0x08};
 static const unsigned char iv[8] = {0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88};
 static const unsigned char salt[4] = {0xca, 0xfe, 0xba, 0xbe};
@@ -61,7 +61,7 @@ encrypt()
         goto cleanup;
     }
 
-    ciphertext= (char*)malloc((2048) * sizeof( char ));
+    ciphertext= (unsigned char*)malloc((2048) * sizeof( char ));
     if ( ciphertext == NULL ){
         printf("Error allocating memory for ciphertext\n");
         goto cleanup;
@@ -69,15 +69,17 @@ encrypt()
     
 
     unsigned char* plain_text = (unsigned char*)malloc((plain_text_len) * sizeof( unsigned char ));
-
     if( !plain_text ){
         printf("Error allocating memory for plain text\n");
         return;
     }
-
     memcpy(plain_text, buffer, plain_text_len);
 
     ret = encrypt_util(plain_text, &plain_text_len, ciphertext, &cipher_text_len);
+    if( ret != 0 ){
+        printf("Error in encryption\n");
+        goto cleanup;
+    }
 
     fwrite(ciphertext, cipher_text_len, 1, output);
 
@@ -86,6 +88,7 @@ encrypt()
         goto cleanup;
     }
     
+    /* Cleanup sequence to close all the files and free all the memory */
     cleanup:
         if ( output ) {
             fclose(output);
@@ -105,7 +108,7 @@ encrypt()
         if ( ciphertext ) {
             free(ciphertext);
             ciphertext = NULL;
-            
+
         }
 
         if ( truncate("decrypt", 0) != 0 )
@@ -139,7 +142,7 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
 
     padded_plaintext[new_plaintext_len - 2] = (unsigned char)padding_len;
 
-    // Add next header field (example: assuming TCP, which is 6)
+    /* Add next header field (Here it is 4 indicating it is IPv4 communication) */
     padded_plaintext[new_plaintext_len - 1] = 4;
 
     *plaintext_len = new_plaintext_len;
@@ -150,6 +153,7 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
         goto err;
     }
 
+    /* Creating the nonce from the IV and the Salt */
     unsigned char nonce[12];
     memcpy(nonce, salt, 4);
     memcpy(nonce + 4, iv, 8);        
@@ -219,9 +223,9 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
         return 1;
 }
 
-int main()
-{
-    encrypt();
+// int main()
+// {
+//     encrypt();
 
-    return 0;
-}
+//     return 0;
+// }

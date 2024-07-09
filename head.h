@@ -1,6 +1,7 @@
 #ifndef HEAD_H
 #define HEAD_H
 
+/* All the required native C libraries */
 #include<stdint.h>
 #include<stdio.h>
 #include<unistd.h>
@@ -8,6 +9,7 @@
 #include<signal.h>
 #include<string.h>
 
+/* All the required OpenSSL libraries used for encryption and decryption */
 #include <openssl/evp.h>
 #include<openssl/aes.h>
 #include <openssl/conf.h>

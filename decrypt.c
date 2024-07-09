@@ -2,12 +2,9 @@
 
 /*
 *TODO: 
-*Add the IP header on top of the decrypted data 
-*Make the ciphertext pointer include the ESP header and the IV since I need to pass the ESP header and the Next Header and Padding length 
-*to generate the auth tag for verification 
-*Add better error handling
 */
 
+/* Data that is set during the Security Association for decryption */
 static const unsigned char key[16] = {0xfe, 0xff, 0xe9, 0x92, 0x86, 0x65, 0x73, 0x1c, 0x6d, 0x6a, 0x8f, 0x94, 0x67, 0x30, 0x83, 0x08};
 static const unsigned char iv[8] = {0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88};
 static const unsigned char salt[4] = {0xca, 0xfe, 0xba, 0xbe};
@@ -28,24 +25,19 @@ decrypt()
 
     /* "rb" is read binary mode. */
     input = fopen("output_binary_file", "rb");
-
     if( input == NULL ){
 
         printf("Encryption file does not exist error\n");
         goto cleanup;
     }
+
     /*"input" goes to the end of the file.*/  
     fseek(input, 0, SEEK_END);
   
-    /*
-     *"file_length" gets the current position of the file pointer 
-     *which is at the end of the file.
-    */ 
+    /*"file_length" gets the current position of the file pointer which is at the end of the file.*/ 
     file_length = ftell(input);
 
-    /* 
-     *The length of the payload data is essentially the length of the output removing the ESP as AAD and the IP header. 
-     */
+    /*The length of the payload data is essentially the length of the output removing the ESP as AAD and the IP header.*/
     size_t cipher_text_len = file_length - 36;
 
     /*Rewind "input" back to the beginning of the file*/
@@ -62,13 +54,13 @@ decrypt()
     fread(buffer, file_length, 1, input);
  
     output = fopen("decrypt", "wb");
-
+    
     if( output == NULL ){
         printf("Decryption error\n");
         goto cleanup;
     }
 
-    plaintext = (char*)malloc((2048) * sizeof( char ));
+    plaintext = (unsigned char*)malloc((2048) * sizeof( char ));
 
     if ( plaintext == NULL ){
         printf("Error allocating memory for plaintext\n");
@@ -232,9 +224,9 @@ decrypt_util(unsigned char *cipher_text, int cipher_text_len, unsigned char *pla
         return 1;
 }
 
-int main()
-{
-    decrypt();
+// int main()
+// {
+//     decrypt();
 
-    return 0;
-}
+//     return 0;
+// }

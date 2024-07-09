@@ -94,6 +94,7 @@ create_temp_input()
 	return 0;
 }
 
+/* The function creates a binary file to use in the decrypt function */
 int 
 create_temp_output()
 {
@@ -120,9 +121,9 @@ create_temp_output()
     return 0;
 }
 
-int main()
-{
-	create_temp_input();
-	create_temp_output();
-	return 0;
-}
+// int main()
+// {
+// 	create_temp_input();
+// 	create_temp_output();
+// 	return 0;
+// }
