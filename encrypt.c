@@ -14,8 +14,6 @@ static const unsigned char ip[20] = {0x45, 0x00, 0x00, 0x74, 0x69, 0x8f, 0x00, 0
 
 int encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *ciphertext, size_t *cipher_text_len);
 
-void handle_errors();
-
 /* A function to encrypt the packet information*/
 void 
 encrypt()
@@ -92,18 +90,22 @@ encrypt()
         if ( output ) {
             fclose(output);
             output = NULL;
+
         }
         if ( buffer ) {
             free(buffer);
             buffer = NULL;
+
         }
         if ( plain_text ) {
             free(plain_text);
             plain_text = NULL;
+
         }
         if ( ciphertext ) {
             free(ciphertext);
             ciphertext = NULL;
+            
         }
 
         if ( truncate("decrypt", 0) != 0 )
