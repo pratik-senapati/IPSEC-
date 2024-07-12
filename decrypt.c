@@ -9,7 +9,8 @@ static const unsigned char key[16] = {0xfe, 0xff, 0xe9, 0x92, 0x86, 0x65, 0x73, 
 static const unsigned char iv[8] = {0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88};
 static const unsigned char salt[4] = {0xca, 0xfe, 0xba, 0xbe};
 
-int decrypt_util(unsigned char *cipher_text, int cipher_text_len, unsigned char *plain_text, unsigned char *additional_auth_data);
+int decrypt_util(unsigned char *cipher_text, int cipher_text_len, 
+unsigned char *plain_text, unsigned char *additional_auth_data, unsigned char *check_buffer);
 
 /* A function to decrypt the packet information*/
 void 
@@ -17,10 +18,12 @@ decrypt()
 {
     FILE* input = NULL;
     FILE* output = NULL;
+    FILE* check = NULL;
     char* buffer = NULL;
     long file_length = 0;
     unsigned char* plaintext = NULL;
     unsigned char* additional_auth_data = NULL;
+    unsigned char* check_buffer = NULL;
     int ret = 0;
 
     /* "rb" is read binary mode. */
@@ -42,6 +45,21 @@ decrypt()
 
     /*Rewind "input" back to the beginning of the file*/
     rewind(input);
+    
+    /* Here we need a buffer to hold the original plaintext for comparison purposes*/
+    check = fopen("input_binary_file", "rb");
+    if( check == NULL ){
+        printf("Error opening input_binary_file\n");
+        goto cleanup;
+    }
+
+    check_buffer = (unsigned char*)malloc((cipher_text_len - 16 - 2) * sizeof( char ));
+    if( check_buffer == NULL ){
+        printf("Error allocating memory for check buffer\n");
+        goto cleanup;
+    }
+
+    fread(check_buffer, cipher_text_len - 16, 1, check);
 
     /*Allocate memory to the buffer in order to copy and read from "input"*/
     buffer = (char*)malloc((file_length) * sizeof( char ));
@@ -84,7 +102,7 @@ decrypt()
     }
     memcpy(additional_auth_data, buffer + 20, 8);
 
-    ret = decrypt_util(cipher_text, cipher_text_len, plaintext, additional_auth_data);
+    ret = decrypt_util(cipher_text, cipher_text_len, plaintext, additional_auth_data, check_buffer);
     if( ret != 0 ){
         printf("Error decrypting\n");
         goto cleanup;
@@ -141,7 +159,8 @@ decrypt()
 }
 
 int
-decrypt_util(unsigned char *cipher_text, int cipher_text_len, unsigned char *plain_text, unsigned char *additional_auth_data)
+decrypt_util(unsigned char *cipher_text, int cipher_text_len, 
+unsigned char *plain_text, unsigned char *additional_auth_data, unsigned char *check_buffer)
 {
     EVP_CIPHER_CTX *ctx;
     int len = 0;
@@ -197,10 +216,19 @@ decrypt_util(unsigned char *cipher_text, int cipher_text_len, unsigned char *pla
     ret = EVP_DecryptFinal_ex(ctx, plain_text + len, &len);
     
     if( ret == 1 ){
-        /* Plaintext successfully verified */
+        /* Tag successfully verified */
         plaintext_len += len;
         printf("Decrypted text:\n");
         BIO_dump_fp(stdout, (const char*)plain_text, plaintext_len);
+
+        if (memcmp(plain_text, check_buffer, cipher_text_len - 16 - 2) == 0) {
+            printf("Success: Plaintext matches check buffer\n");
+
+        } else {
+            printf("Failure: Plaintext does not match check buffer\n");
+
+        }
+
         printf("Tag successfully verified\n");
 
     } else{
