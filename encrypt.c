@@ -87,6 +87,9 @@ encrypt()
         printf("Error writing to output file\n");
         goto cleanup;
     }
+
+    printf("Encrypted text:\n");
+    BIO_dump_fp(stdout, (const char*)ciphertext, cipher_text_len);
     
     /* Cleanup sequence to close all the files and free all the memory */
     cleanup:
@@ -204,10 +207,6 @@ encrypt_util(unsigned char *plaintext, size_t *plaintext_len, unsigned char *cip
     memcpy(ciphertext + 28, iv, 8);
 
     *cipher_text_len += 20 + 8 + 8 ;
-
-    printf("Ciphertext is: %s\n", ciphertext);
-
-    printf("Cipher text length is: %ld\n", *cipher_text_len);
     
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
